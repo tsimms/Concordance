@@ -5,14 +5,28 @@
 #include <ctype.h>
 
 /****************************************************************
+ **  Constants
+ ****************************************************************/
+
+// how many lines can a word appear on?
+#define MAX_LINE_OCCURRENCES 4096
+// how long can a line of text read in be?
+#define MAX_LINE_LENGTH 16384
+// what characters do we support within word tokens?
+// you must include space
+// ' is kinda funny: used as you'll, but also as 'as-is' notation
+// - is kinda funny: used as hyphenation, but also as --- separators
+#define TOKEN_CHARACTERS " abcdefghijklmnopqrstuvwxyz-'"
+
+/****************************************************************
  **  Data structure section
  ****************************************************************/
 struct node {
   char* word;
   struct node *left, *right;
-  int lastLineNumber;
-  int instances;
-  char lineText[16384];
+  unsigned short instances;
+  unsigned short lineNumbers[ MAX_LINE_OCCURRENCES ];
+  unsigned short lineNumbersPos;
 };
 
 /* Node comparisons */
@@ -38,8 +52,7 @@ struct node* newNode(char* w) {
   n->word = (char*) malloc (sizeof (char) * strlen(w));
   strcpy(n->word, w);
   n->instances = 0;
-  n->lastLineNumber = 0;
-  strcpy(n->lineText, "");
+  n->lineNumbersPos = 0;
   return n;
 }
 
@@ -127,16 +140,9 @@ struct node* insert(struct node* r, char* w, int lineNumber) {
     }
   }
   // Now set the line text stuff, which shows the occurrences of the word
-  if (! r->lastLineNumber) {
-    // first occurrence
-    sprintf(r->lineText, "%i", lineNumber);
-  }
-  else if (r->lastLineNumber != lineNumber) {
-    // skip if we're on the same line number as the last entry; otherwise,
-    // append the occurrence line number
-    sprintf(r->lineText, "%s %i", r->lineText, lineNumber);
-  }
-  r->lastLineNumber = lineNumber;
+  if ((!r->lineNumbersPos) || r->lineNumbers[r->lineNumbersPos-1]!=lineNumber)
+    // skip if we're on the same line number as the previous entry
+    r->lineNumbers[r->lineNumbersPos++] = lineNumber;
   r->instances++;       // this is a bonus, that I needed for testing, and
                         // thought it added a nice touch.
   return r;
@@ -154,11 +160,14 @@ void printData(struct node* r) {
   if (r != NULL) {
     printData(r->left);
 /*
-    printf ("%s (%i) %s <<<%s - %s>>>\n", r->word, r->instances, r->lineText,
+    printf ("%s (%i) %s <<<%s - %s>>>\n", r->word, r->instances,
       r->left == NULL ? "NULL" : r->left->word,
       r->right == NULL ? "NULL" : r->right->word);
 */
-    printf ("%s (%i) %s\n", r->word, r->instances, r->lineText);
+    printf ("%s (%i)", r->word, r->instances);
+    for (int i=0; i < r->lineNumbersPos; i++)
+      printf (" %i", r->lineNumbers[i]);
+    printf ("\n");
     printData(r->right);
   }
 }
@@ -177,7 +186,7 @@ struct node* root;
 */
 
 void filter(char *line) {
-  char* valid = " abcdefghijklmnopqrstuvwxyz-'";
+  char* valid = TOKEN_CHARACTERS ;
   char* newLine = line;
   for (char ch; *line; line++) {
     ch = *line;
@@ -208,11 +217,11 @@ void scanLine (int lineNumber, char* line) {
 void main() {
   int lineCount = 1;
   FILE *fp;
-  char str[16384];      // Wasn't specified how large the lines were
+  char str[ MAX_LINE_LENGTH ];  // Wasn't specified how large the lines were
                         // 16K seems to work during my tests.
-  char* line = (char*) malloc (sizeof(char) * 16384);
+  char* line = (char*) malloc (sizeof(char) * MAX_LINE_LENGTH);
   fp = fopen("document.txt" , "r");
-  while (fgets(str, 16384, fp)) {
+  while (fgets(str, MAX_LINE_LENGTH , fp)) {
     str[strlen(str)-1] = '\0';  // trim EOL
     strcpy(line, str);
     filter(line);
