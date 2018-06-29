@@ -25,7 +25,7 @@ The program should be well structured, cleanly implemented and commented, and us
 
 ## The Solution
 
-Okay, so this was a good project, giving me a chance to recall some good ol' CompSci memories. I chose to implement the data structure using a Splay tree. It's actually a data structure I fell in love with years ago, and I thought this was a great application to show off its capabilities.
+Okay, so this was a good project, giving me a chance to recall some good ol' CompSci memories. I chose to implement the data structure using a Splay tree. It's actually a data structure I fell in love with years ago (it works really well as a queuing system, which I had written for a music processing engine), and I thought this was a great application to show off its capabilities.
 
 A Splay tree stores data in order, and is continually transformed as searches are performed. One of the great things about that is that lookups of frequent keys are less expensive, because they remain closer to the top. In this way, we sorta "cheat" the performance with some common word ('a', 'and', 'of', 'the', etc.) optimization. Splay trees, on average, are documented to get O(log _n_) for both inserts and lookups (lookups are a part of inserts in fact). Traversing the tree is also fast, as is the case with other binary trees.
 
