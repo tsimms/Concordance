@@ -45,3 +45,14 @@ gcc -o concordance main.c
 ```
 Compiled/Tested on `Ubuntu 16.04.1 LTS`.
 Test `document.txt` in repo.
+
+## Considerations
+
+I like disclosing the areas where the system will have trouble. It's mainly due to some non-standard notations that I could have accommodated, admitedly, but I found to be rather loose exceptions, and didn't think it was important to spend the time implementing. Nonetheless, here's a list of some of those situations:
+
+1. Periods. So, we strip periods as separating punctuation, but periods are rather important for notating website addresses.
+2. Hyphens. &mdash; is used to separate phrases, but some people write them improperly (myself included) as double hyphens ("--"), or use hyphens as separators.
+3. Numbers. We stripped out numbers, but numbers used as words are commonplace (1st, 2nd, 3rd, etc.).
+4. Apostrphes. People use them in weird ways outside of normal conjunctions, including 'as-is' (I guess that's like double-finger air quotes?)
+
+Of course all of this could be easily handled with a regexp parser -- it's just a real shame (oh look, I just did it myself! ...tho in my defense, at least I space around it!) that C doesn't have a great regexp engine with which I'm familiar! Anyhow, these were considerations that in a real-world implementation would need to be handled.
